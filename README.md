@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HyuuHub — Your Donghua Hub.
 
-## Getting Started
+Platform streaming donghua — Next.js 16 (App Router, Server Components) + TypeScript + Supabase + Tailwind CSS.
 
-First, run the development server:
+Data donghua real-time dari [anichin.cafe](https://anichin.cafe) melalui adapter/scraper server-side (lihat `src/lib/anichin/`).
+
+## Fitur
+
+- **Home** — hero, popular today, latest, recommended, leaderboard (weekly/monthly/all-time), continue watching
+- **Latest** — rilis terbaru + pagination
+- **Search** — pencarian + pagination (SSR via URL)
+- **Schedule** — jadwal Senin–Minggu
+- **Genres** — daftar genre
+- **Detail** — poster, sinopsis, rating, metadata, episode list, favorite
+- **Watch** — player multi-server, download per kualitas, prev/next, episode grid, keyboard shortcut
+- **User** — login/register (Supabase Auth), watch history, favorites, continue watching
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # isi Supabase URL + anon key
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Jalankan `supabase/schema.sql` di Supabase SQL Editor — membuat tabel `profiles`, `watch_history`, `favorites` + RLS (user hanya bisa akses datanya sendiri) + trigger auto-create profile.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Arsitektur
 
-## Learn More
+```
+src/
+  app/            # routes (Server Components by default)
+  components/     # UI components (beberapa "use client" bila perlu interaksi)
+  lib/
+    anichin/      # scraper + adapter/normalizer (server-only)
+    supabase/     # client browser / server / middleware
+  types/          # tipe domain — kontrak UI ↔ adapter
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Catatan
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Service-role key TIDAK pernah dipakai client — hanya anon key.
+- Halaman di-cache (revalidate 120–3600s) sesuai frekuensi perubahan data.
