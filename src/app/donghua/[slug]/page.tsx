@@ -44,10 +44,21 @@ export default async function DonghuaDetailPage({ params }: Props) {
   const id = decodeURIComponent(slug);
 
   let detail = null;
+  let failed = false;
+  let notFoundFlag = false;
   try {
     detail = await getDetail(id);
   } catch (err) {
-    if (err instanceof UpstreamError && err.status === 404) notFound();
+    if (err instanceof UpstreamError && err.status === 404) {
+      notFoundFlag = true;
+    } else {
+      failed = true;
+    }
+  }
+
+  if (notFoundFlag) notFound();
+
+  if (failed || !detail) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16">
         <EmptyState

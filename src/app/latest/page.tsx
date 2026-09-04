@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getLatest } from "@/lib/anichin/adapter";
 import { DonghuaCard, CardGrid } from "@/components/donghua-card";
 import { SectionSkeleton, EmptyState, ErrorState } from "@/components/states";
+import type { Paginated, DonghuaCard as DonghuaCardType } from "@/types";
 
 export const revalidate = 300;
 
@@ -16,61 +17,62 @@ export const metadata = {
 };
 
 async function LatestList({ page }: { page: number }) {
+  let data: Paginated<DonghuaCardType> | null = null;
   try {
-    const data = await getLatest(page);
-    if (!data.items.length) {
-      return <EmptyState title="Tidak ada rilis" description="Belum ada episode baru di halaman ini." />;
-    }
-
-    return (
-      <>
-        <CardGrid>
-          {data.items.map((d, i) => (
-            <DonghuaCard key={d.id + i} donghua={d} priority={i < 6} />
-          ))}
-        </CardGrid>
-
-        {/* Pagination */}
-        <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pagination">
-          {page > 1 ? (
-            <Link
-              href={`/latest?page=${page - 1}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Sebelumnya
-            </Link>
-          ) : (
-            <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground/40 opacity-50">
-              <ChevronLeft className="h-4 w-4" />
-              Sebelumnya
-            </span>
-          )}
-          <span className="rounded-lg bg-muted px-3 py-2 text-sm font-medium">
-            {page}
-          </span>
-          {data.hasNextPage ? (
-            <Link
-              href={`/latest?page=${page + 1}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              Selanjutnya
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          ) : (
-            <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground/40 opacity-50">
-              Selanjutnya
-              <ChevronRight className="h-4 w-4" />
-            </span>
-          )}
-        </nav>
-      </>
-    );
+    data = await getLatest(page);
   } catch {
-    return (
-      <ErrorState message="Tidak bisa memuat rilis terbaru dari anichin.cafe." />
-    );
+    data = null;
   }
+
+  if (!data) {
+    return <ErrorState message="Tidak bisa memuat rilis terbaru dari anichin.cafe." />;
+  }
+
+  if (!data.items.length) {
+    return <EmptyState title="Tidak ada rilis" description="Belum ada episode baru di halaman ini." />;
+  }
+
+  return (
+    <>
+      <CardGrid>
+        {data.items.map((d, i) => (
+          <DonghuaCard key={d.id + i} donghua={d} priority={i < 6} />
+        ))}
+      </CardGrid>
+
+      <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pagination">
+        {page > 1 ? (
+          <Link
+            href={`/latest?page=${page - 1}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Sebelumnya
+          </Link>
+        ) : (
+          <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground/40 opacity-50">
+            <ChevronLeft className="h-4 w-4" />
+            Sebelumnya
+          </span>
+        )}
+        <span className="rounded-lg bg-muted px-3 py-2 text-sm font-medium">{page}</span>
+        {data.hasNextPage ? (
+          <Link
+            href={`/latest?page=${page + 1}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Selanjutnya
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        ) : (
+          <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground/40 opacity-50">
+            Selanjutnya
+            <ChevronRight className="h-4 w-4" />
+          </span>
+        )}
+      </nav>
+    </>
+  );
 }
 
 export default async function LatestPage({

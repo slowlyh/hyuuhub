@@ -38,9 +38,10 @@ export default async function WatchPage({ params }: Props) {
 
   let watch = null;
   let episodes: Awaited<ReturnType<typeof getDetail>>["episodes"] = [];
+  let failed = false;
+  let notFoundFlag = false;
 
   try {
-    // Paralel: data episode + episode list (untuk grid prev/next)
     const [w, detail] = await Promise.all([
       getWatch(epId),
       getDetail(seriesSlug).catch(() => null),
@@ -48,7 +49,16 @@ export default async function WatchPage({ params }: Props) {
     watch = w;
     episodes = detail?.episodes || [];
   } catch (err) {
-    if (err instanceof UpstreamError && err.status === 404) notFound();
+    if (err instanceof UpstreamError && err.status === 404) {
+      notFoundFlag = true;
+    } else {
+      failed = true;
+    }
+  }
+
+  if (notFoundFlag) notFound();
+
+  if (failed || !watch) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16">
         <EmptyState

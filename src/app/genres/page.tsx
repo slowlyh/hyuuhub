@@ -4,8 +4,9 @@
 import Link from "next/link";
 import { getHome } from "@/lib/anichin/adapter";
 import { EmptyState, ErrorState } from "@/components/states";
+import type { Genre } from "@/types";
 
-export const revalidate = 3600; // genre nyaris tidak berubah
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Genres",
@@ -23,14 +24,28 @@ const COLORS = [
   "bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400",
 ];
 
-export default async function GenresPage() {
-  let genres: Array<{ id: string; title: string }> = [];
-  let failed = false;
+function GenreGrid({ genres }: { genres: Genre[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {genres.map((g, i) => (
+        <Link
+          key={g.id + g.title}
+          href={`/search?q=${encodeURIComponent(g.title)}`}
+          className={`flex items-center justify-center rounded-xl px-4 py-6 text-sm font-semibold transition-all hover:-translate-y-0.5 ${COLORS[i % COLORS.length]}`}
+        >
+          {g.title}
+        </Link>
+      ))}
+    </div>
+  );
+}
 
+export default async function GenresPage() {
+  let genres: Genre[] | null = null;
   try {
     genres = (await getHome()).genres;
   } catch {
-    failed = true;
+    genres = null;
   }
 
   return (
@@ -42,22 +57,12 @@ export default async function GenresPage() {
         </p>
       </div>
 
-      {failed ? (
+      {genres === null ? (
         <ErrorState message="Tidak bisa memuat daftar genre." />
       ) : genres.length === 0 ? (
         <EmptyState title="Belum ada genre" />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {genres.map((g, i) => (
-            <Link
-              key={g.id + g.title}
-              href={`/search?q=${encodeURIComponent(g.title)}`}
-              className={`flex items-center justify-center rounded-xl px-4 py-6 text-sm font-semibold transition-all hover:-translate-y-0.5 ${COLORS[i % COLORS.length]}`}
-            >
-              {g.title}
-            </Link>
-          ))}
-        </div>
+        <GenreGrid genres={genres} />
       )}
     </div>
   );

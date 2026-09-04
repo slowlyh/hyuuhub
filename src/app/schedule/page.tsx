@@ -1,14 +1,13 @@
 // ============================================================
 // app/schedule/page.tsx — Jadwal Senin–Minggu (Server)
-// Day selector = links; data per hari = Suspense per tab.
 // ============================================================
 import { Suspense } from "react";
 import Link from "next/link";
 import { getSchedule } from "@/lib/anichin/adapter";
 import { SectionSkeleton, EmptyState, ErrorState } from "@/components/states";
-import type { ScheduleItem } from "@/types";
+import type { ScheduleItem, ScheduleMap } from "@/types";
 
-export const revalidate = 600; // jadwal jarang berubah
+export const revalidate = 600;
 
 export const metadata = {
   title: "Schedule",
@@ -29,15 +28,8 @@ function todayKey(): string {
   return DAYS[(new Date().getDay() + 6) % 7].key;
 }
 
-async function DayList({ day }: { day: string }) {
-  let schedule: Record<string, ScheduleItem[]> = {};
-  try {
-    schedule = await getSchedule();
-  } catch {
-    return <ErrorState message="Tidak bisa memuat jadwal dari anichin.cafe." />;
-  }
-
-  const items = schedule[day] || [];
+function DayListContent({ schedule, day }: { schedule: ScheduleMap; day: string }) {
+  const items: ScheduleItem[] = schedule[day] || [];
   if (!items.length) {
     return (
       <EmptyState
@@ -68,14 +60,27 @@ async function DayList({ day }: { day: string }) {
             <p className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-accent">
               {item.title}
             </p>
-            {item.time && (
-              <p className="mt-1 text-xs text-muted-foreground">{item.time}</p>
-            )}
+            {item.time && <p className="mt-1 text-xs text-muted-foreground">{item.time}</p>}
           </div>
         </Link>
       ))}
     </div>
   );
+}
+
+async function DayList({ day }: { day: string }) {
+  let schedule: ScheduleMap | null = null;
+  try {
+    schedule = await getSchedule();
+  } catch {
+    schedule = null;
+  }
+
+  if (!schedule) {
+    return <ErrorState message="Tidak bisa memuat jadwal dari anichin.cafe." />;
+  }
+
+  return <DayListContent schedule={schedule} day={day} />;
 }
 
 export default async function SchedulePage({
@@ -84,20 +89,15 @@ export default async function SchedulePage({
   searchParams: Promise<{ day?: string }>;
 }) {
   const params = await searchParams;
-  const day = params.day && DAYS.some((d) => d.key === params.day)
-    ? params.day
-    : todayKey();
+  const day = params.day && DAYS.some((d) => d.key === params.day) ? params.day : todayKey();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Schedule</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Jadwal rilis donghua per hari.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Jadwal rilis donghua per hari.</p>
       </div>
 
-      {/* Day selector — link-based, SSR-friendly, scroll horizontal mobile */}
       <div className="scrollbar-none -mx-4 mb-6 flex gap-2 overflow-x-auto px-4">
         {DAYS.map((d) => (
           <Link
@@ -110,9 +110,7 @@ export default async function SchedulePage({
             }`}
           >
             {d.label}
-            {d.key === todayKey() && (
-              <span className="ml-1.5 text-[10px] opacity-70">•</span>
-            )}
+            {d.key === todayKey() && <span className="ml-1.5 text-[10px] opacity-70">•</span>}
           </Link>
         ))}
       </div>

@@ -1,16 +1,18 @@
 // ============================================================
 // components/theme.tsx — Dark/light toggle (localStorage + class)
+// Tanpa setState-dalam-effect: state hanya berubah lewat event klik.
 // ============================================================
 "use client";
 
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  // null = belum tahu (prerender); anggap dark via prefers-color-scheme default
+  const [dark, setDark] = useState<boolean>(() =>
+    typeof document !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : false
+  );
 
   function toggle() {
     const next = !dark;
@@ -21,10 +23,21 @@ export function ThemeToggle() {
     } catch {}
   }
 
+  // Sinkronisasi pasca-hydration bila server render berbeda dari client
+  // (jarang; hanya koreksi aria-label). Tanpa setState sinkron.
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const actual = document.documentElement.classList.contains("dark");
+      setDark((prev) => (prev === actual ? prev : actual));
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
   return (
     <button
       onClick={toggle}
       aria-label="Toggle theme"
+      aria-pressed={dark}
       className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
     >
       {dark ? (

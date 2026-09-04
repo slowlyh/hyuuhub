@@ -1,6 +1,5 @@
 // ============================================================
 // app/search/page.tsx — Search (Server, pagination via URL)
-// Debounce & input dilakukan di navbar; halaman ini murni SSR.
 // ============================================================
 import { Suspense } from "react";
 import Link from "next/link";
@@ -8,6 +7,7 @@ import { ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { searchDonghua } from "@/lib/anichin/adapter";
 import { DonghuaCard, CardGrid } from "@/components/donghua-card";
 import { SectionSkeleton, EmptyState, ErrorState } from "@/components/states";
+import type { Paginated, DonghuaCard as DonghuaCardType } from "@/types";
 
 export const metadata = {
   title: "Search",
@@ -23,55 +23,65 @@ const SUGGESTIONS = [
   "Martial Universe",
 ];
 
-async function SearchResults({ q, page }: { q: string; page: number }) {
-  try {
-    const data = await searchDonghua(q, page);
-    if (!data.items.length) {
-      return (
-        <EmptyState
-          title={`Tidak ada hasil untuk "${q}"`}
-          description="Coba kata kunci lain — judul Indonesia atau Inggris kadang berbeda."
-        />
-      );
-    }
-
+function ResultsContent({ data, q, page }: { data: Paginated<DonghuaCardType>; q: string; page: number }) {
+  if (!data.items.length) {
     return (
-      <>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Hasil untuk <span className="font-medium text-foreground">"{q}"</span>
-        </p>
-        <CardGrid>
-          {data.items.map((d, i) => (
-            <DonghuaCard key={d.id + i} donghua={d} priority={i < 6} />
-          ))}
-        </CardGrid>
-
-        <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pagination">
-          {page > 1 && (
-            <Link
-              href={`/search?q=${encodeURIComponent(q)}&page=${page - 1}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Sebelumnya
-            </Link>
-          )}
-          <span className="rounded-lg bg-muted px-3 py-2 text-sm font-medium">{page}</span>
-          {data.hasNextPage && (
-            <Link
-              href={`/search?q=${encodeURIComponent(q)}&page=${page + 1}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              Selanjutnya
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          )}
-        </nav>
-      </>
+      <EmptyState
+        title={`Tidak ada hasil untuk "${q}"`}
+        description="Coba kata kunci lain — judul Indonesia atau Inggris kadang berbeda."
+      />
     );
+  }
+
+  return (
+    <>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Hasil untuk <span className="font-medium text-foreground">&quot;{q}&quot;</span>
+      </p>
+      <CardGrid>
+        {data.items.map((d, i) => (
+          <DonghuaCard key={d.id + i} donghua={d} priority={i < 6} />
+        ))}
+      </CardGrid>
+
+      <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pagination">
+        {page > 1 && (
+          <Link
+            href={`/search?q=${encodeURIComponent(q)}&page=${page - 1}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Sebelumnya
+          </Link>
+        )}
+        <span className="rounded-lg bg-muted px-3 py-2 text-sm font-medium">{page}</span>
+        {data.hasNextPage && (
+          <Link
+            href={`/search?q=${encodeURIComponent(q)}&page=${page + 1}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Selanjutnya
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        )}
+      </nav>
+    </>
+  );
+}
+
+async function SearchResults({ q, page }: { q: string; page: number }) {
+  let data: Paginated<DonghuaCardType> | null = null;
+  try {
+    data = await searchDonghua(q, page);
   } catch {
+    data = null;
+  }
+
+  if (!data) {
     return <ErrorState message="Pencarian gagal — source anichin.cafe tidak merespons." />;
   }
+
+  return <ResultsContent data={data} q={q} page={page} />;
 }
 
 export default async function SearchPage({
@@ -87,9 +97,7 @@ export default async function SearchPage({
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Search</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Cari donghua berdasarkan judul.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Cari donghua berdasarkan judul.</p>
       </div>
 
       {!q ? (

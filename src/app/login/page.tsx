@@ -47,8 +47,8 @@ function LoginForm() {
 
       router.push(next);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
       setLoading(false);
     }
