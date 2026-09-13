@@ -3,7 +3,7 @@
 // URL: /genre/action (bukan URL upstream)
 // ============================================================
 import type { Metadata } from "next";
-import { getBrowse, getGenres } from "@/lib/shinigami/adapter";
+import { getGenres } from "@/lib/shinigami/adapter";
 import { BrowseSuspense, parsePage, parseSort } from "@/components/browse";
 
 export const revalidate = 600;
@@ -28,21 +28,18 @@ export default async function GenrePage({ params, searchParams }: Props) {
   const genre = decodeURIComponent(slug).toLowerCase().trim();
   const name = genre.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // validasi genre terhadap daftar upstream (hemat: pakai cache 1 jam)
-  let known = true;
-  let empty = false;
+  // validasi genre terhadap daftar upstream (cache 1 jam).
+  // Bila source sedang error → jangan klaim "tidak dikenal"; render
+  // dan biar BrowseContent yang menampilkan error state.
+  let known: boolean | null = null;
   try {
     const genres = await getGenres();
     known = genres.some((g) => g.slug === genre);
-    if (known) {
-      const probe = await getBrowse({ genre, page: 1, pageSize: 1, sort: "latest" });
-      empty = probe.items.length === 0;
-    }
   } catch {
-    known = true; // source sedang error — biarkan halaman render + error state
+    known = null;
   }
 
-  if (!known || empty) {
+  if (known === false) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         <h1 className="text-xl font-semibold">Genre “{name}” tidak tersedia</h1>
