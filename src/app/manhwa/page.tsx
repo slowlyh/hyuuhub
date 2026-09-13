@@ -1,16 +1,16 @@
 // ============================================================
-// app/latest/page.tsx — Rilis terbaru (semua format, paginated)
+// app/manhwa/page.tsx — jelajah Manhwa (format=manhwa)
 // ============================================================
 import { BrowseSuspense, parsePage, parseSort } from "@/components/browse";
 
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Rilis Terbaru",
-  description: "Chapter manga, manhwa, dan manhua terbaru di HyuuHub.",
+  title: "Manhwa",
+  description: "Jelajahi manhwa Korea terbaru, terpopuler, dan rating tertinggi di HyuuHub.",
 };
 
-export default async function LatestPage({
+export default async function ManhwaIndex({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string; sort?: string; format?: string }>;
@@ -22,12 +22,10 @@ export default async function LatestPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Rilis Terbaru</h1>
-        <p className="mt-1 text-sm text-dim">
-          Chapter teranyar dari manga, manhwa, dan manhua — diperbarui otomatis tiap 5 menit.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">Manhwa</h1>
+        <p className="mt-1 text-sm text-dim">Komik Korea — sistem level, Murim, romansa, aksi vertikal berwarna.</p>
       </div>
-      <BrowseSuspense basePath="/latest" format="" sort={sort} page={page} />
+      <BrowseSuspense basePath="/manhwa" format="manhwa" sort={sort} page={page} />
     </div>
   );
 }

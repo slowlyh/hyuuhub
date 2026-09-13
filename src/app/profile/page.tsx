@@ -1,17 +1,21 @@
 // ============================================================
-// app/profile/page.tsx — Protected profile area (Server)
-// Watch history + favorites milik user (RLS menjamin).
+// app/profile/page.tsx — Area profil (Server)
+// Riwayat baca + favorit milik user (RLS menjamin).
 // ============================================================
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/states";
 import { HistoryRow, FavoriteRow } from "@/components/profile-rows";
 
-export const metadata = { title: "Profile" };
+export const metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  let supabase;
+  try {
+    supabase = await createClient();
+  } catch {
+    redirect("/login?next=/profile");
+  }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/profile");
 
@@ -33,26 +37,29 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      {/* Header profile */}
+      {/* Header profil */}
       <div className="mb-8 flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-xl font-bold text-accent-foreground">
+        <div className="btn-accent flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-bold">
           {(profile?.username || user.email || "U")[0].toUpperCase()}
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight">
             @{profile?.username || user.email?.split("@")[0]}
           </h1>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
+          <p className="text-sm text-dim">{user.email}</p>
         </div>
       </div>
 
-      {/* Watch history */}
+      {/* Riwayat baca */}
       <section className="mb-10">
-        <h2 className="mb-4 text-lg font-semibold tracking-tight">Riwayat Tontonan</h2>
+        <h2 className="mb-4 text-lg font-semibold tracking-tight">Riwayat Baca</h2>
         {!history?.length ? (
-          <EmptyState title="Belum ada riwayat" description="Tonton donghua apa pun untuk mulai menyimpan riwayat." />
+          <EmptyState
+            title="Belum ada riwayat"
+            description="Buka chapter apa pun untuk mulai menyimpan riwayat baca."
+          />
         ) : (
-          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+          <div className="glass hairline-top divide-y divide-white/5 overflow-hidden">
             {history.map((h) => (
               <HistoryRow key={h.series_id} entry={h} />
             ))}
@@ -60,13 +67,13 @@ export default async function ProfilePage() {
         )}
       </section>
 
-      {/* Favorites */}
+      {/* Favorit */}
       <section>
         <h2 className="mb-4 text-lg font-semibold tracking-tight">Favorit</h2>
         {!favorites?.length ? (
           <EmptyState
             title="Belum ada favorit"
-            description="Tambahkan donghua ke favorit dari halaman detailnya."
+            description="Simpan manga dari halaman detailnya lewat tombol Simpan."
           />
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -76,6 +83,10 @@ export default async function ProfilePage() {
           </div>
         )}
       </section>
+
+      <p className="mt-10 text-center text-xs text-faint">
+        Data favorit & riwayat tersimpan di akunmu sendiri (Supabase, RLS).
+      </p>
     </div>
   );
 }

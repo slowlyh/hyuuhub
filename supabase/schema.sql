@@ -2,6 +2,8 @@
 -- HyuuHub — Supabase schema (PostgreSQL)
 -- Jalankan di Supabase SQL Editor. Idempotent.
 -- RLS: user hanya bisa baca/ubah data miliknya sendiri.
+-- series_id = slug manga kita (/manga/<slug>),
+-- episode_id = nomor chapter sebagai string (read/<slug>/<n>).
 -- ============================================================
 
 -- ---------- 1. PROFILES ----------

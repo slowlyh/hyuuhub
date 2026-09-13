@@ -1,41 +1,39 @@
 // ============================================================
-// components/navbar.tsx — Logo, nav links, search, theme, auth
-// AuthButton (async server) tidak boleh di-import oleh Client
-// Component — karena itu Navbar merender keduanya secara terpisah
-// dan MobileNav menerima slot auth via children.
+// components/navbar.tsx — Logo, nav, search, auth (glass sticky)
 // ============================================================
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { ThemeToggle } from "./theme";
 import { AuthButton } from "./auth-button";
 import { MobileNav } from "./mobile-nav";
 
-const NAV = [
+export const NAV = [
   { href: "/", label: "Home" },
-  { href: "/latest", label: "Latest" },
-  { href: "/schedule", label: "Schedule" },
-  { href: "/genres", label: "Genres" },
+  { href: "/latest", label: "Terbaru" },
+  { href: "/manga", label: "Manga" },
+  { href: "/manhwa", label: "Manhwa" },
+  { href: "/manhua", label: "Manhua" },
+  { href: "/genres", label: "Genre" },
 ];
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex items-center gap-1.5 font-semibold tracking-tight">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-sm font-bold text-accent-foreground">
+    <header className="glass-bar sticky top-0 z-50">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
+        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+          <span className="btn-accent flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold">
             H
           </span>
           <span className="text-base">
-            Hyuu<span className="text-accent">Hub</span>
+            Hyuu<span className="grad-text">Hub</span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-lg px-3 py-1.5 text-sm text-dim transition-colors hover:bg-white/5 hover:text-foreground"
             >
               {item.label}
             </Link>
@@ -45,17 +43,15 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             href="/search"
-            aria-label="Search"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Cari"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stroke bg-glass text-dim transition-colors hover:border-stroke-2 hover:text-foreground"
           >
             <Search className="h-4 w-4" />
           </Link>
-          <ThemeToggle />
           <div className="hidden sm:block">
             <AuthButton />
           </div>
           <MobileNav>
-            {/* slot server → dirender MobileNav sebagai children */}
             <AuthButton full />
           </MobileNav>
         </div>

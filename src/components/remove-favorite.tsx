@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export function RemoveFavorite({ seriesId }: { seriesId: string }) {
+export function RemoveFavorite({ seriesSlug }: { seriesSlug: string }) {
   const router = useRouter();
 
   async function remove() {
@@ -18,7 +18,7 @@ export function RemoveFavorite({ seriesId }: { seriesId: string }) {
       .from("favorites")
       .delete()
       .eq("user_id", user.id)
-      .eq("series_id", seriesId);
+      .eq("series_id", seriesSlug);
     router.refresh();
   }
 
@@ -26,7 +26,7 @@ export function RemoveFavorite({ seriesId }: { seriesId: string }) {
     <button
       onClick={remove}
       aria-label="Hapus dari favorit"
-      className="absolute right-1.5 top-1.5 rounded-md bg-background/80 p-1 opacity-0 backdrop-blur-sm transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100"
+      className="absolute right-1.5 top-1.5 rounded-lg border border-white/10 bg-black/55 p-1 text-white/80 opacity-0 backdrop-blur-sm transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100"
     >
       <X className="h-3.5 w-3.5" />
     </button>

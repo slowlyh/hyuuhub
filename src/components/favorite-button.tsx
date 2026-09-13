@@ -1,101 +1,104 @@
 // ============================================================
-// components/favorite-button.tsx — Bookmark donghua (Client)
-// Bila belum login → arahkan ke /login.
+// components/favorite-button.tsx — Bookmark manga (Client)
+// series_id = slug publik kita.
 // ============================================================
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Loader2 } from "lucide-react";
+import { Bookmark, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Props {
-  seriesId: string;
+  seriesSlug: string;
   seriesTitle: string;
   seriesPoster: string | null;
 }
 
-export function FavoriteButton({ seriesId, seriesTitle, seriesPoster }: Props) {
+export function FavoriteButton({ seriesSlug, seriesTitle, seriesPoster }: Props) {
   const router = useRouter();
-  const [state, setState] = useState<"idle" | "busy" | "faved" | "guest">("guest");
+  const [state, setState] = useState<"idle" | "busy" | "saved" | "guest">("guest");
   const [booted, setBooted] = useState(false);
 
-  // cek status favorit saat mount
-  useState(() => {
+  useEffect(() => {
+    let alive = true;
     (async () => {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          setBooted(true);
+          if (alive) setBooted(true);
           return;
         }
         const { data } = await supabase
           .from("favorites")
           .select("id")
           .eq("user_id", user.id)
-          .eq("series_id", seriesId)
+          .eq("series_id", seriesSlug)
           .maybeSingle();
-        setState(data ? "faved" : "idle");
+        if (alive) setState(data ? "saved" : "idle");
       } catch {
-        setState("idle");
+        if (alive) setState("idle");
       } finally {
-        setBooted(true);
+        if (alive) setBooted(true);
       }
     })();
-  });
+    return () => {
+      alive = false;
+    };
+  }, [seriesSlug]);
 
   async function toggle() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push(`/login?next=/donghua/${encodeURIComponent(seriesId)}`);
+      router.push(`/login?next=/manga/${encodeURIComponent(seriesSlug)}`);
       return;
     }
 
     setState("busy");
     try {
-      if (state === "faved") {
+      if (state === "saved") {
         await supabase
           .from("favorites")
           .delete()
           .eq("user_id", user.id)
-          .eq("series_id", seriesId);
+          .eq("series_id", seriesSlug);
         setState("idle");
       } else {
         await supabase.from("favorites").insert({
           user_id: user.id,
-          series_id: seriesId,
+          series_id: seriesSlug,
           series_title: seriesTitle,
           series_poster: seriesPoster,
         });
-        setState("faved");
+        setState("saved");
       }
       router.refresh();
     } catch {
-      setState(state === "faved" ? "faved" : "idle");
+      setState(state === "saved" ? "saved" : "idle");
     }
   }
 
-  const faved = state === "faved";
+  const saved = state === "saved";
 
   return (
     <button
       onClick={toggle}
       disabled={!booted || state === "busy"}
-      aria-pressed={faved}
-      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-all ${
-        faved
-          ? "border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400"
-          : "border-border hover:bg-muted"
+      aria-pressed={saved}
+      className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold backdrop-blur-xl transition-all ${
+        saved
+          ? "border-accent/60 bg-accent/15 text-accent-2"
+          : "border-stroke bg-glass text-foreground/90 hover:bg-white/10"
       } disabled:opacity-60`}
     >
       {state === "busy" ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <Heart className={`h-4 w-4 ${faved ? "fill-current" : ""}`} />
+        <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
       )}
-      {faved ? "Favorit" : "Tambah Favorit"}
+      {saved ? "Tersimpan" : "Simpan"}
     </button>
   );
 }

@@ -1,16 +1,16 @@
 // ============================================================
-// app/latest/page.tsx — Rilis terbaru (semua format, paginated)
+// app/manga/page.tsx — jelajah Manga (format=manga)
 // ============================================================
 import { BrowseSuspense, parsePage, parseSort } from "@/components/browse";
 
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Rilis Terbaru",
-  description: "Chapter manga, manhwa, dan manhua terbaru di HyuuHub.",
+  title: "Manga",
+  description: "Jelajahi manga Jepang terbaru, terpopuler, dan rating tertinggi di HyuuHub.",
 };
 
-export default async function LatestPage({
+export default async function MangaIndex({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string; sort?: string; format?: string }>;
@@ -22,12 +22,10 @@ export default async function LatestPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Rilis Terbaru</h1>
-        <p className="mt-1 text-sm text-dim">
-          Chapter teranyar dari manga, manhwa, dan manhua — diperbarui otomatis tiap 5 menit.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">Manga</h1>
+        <p className="mt-1 text-sm text-dim">Komik asal Jepang — shounen, seinen, slice of life.</p>
       </div>
-      <BrowseSuspense basePath="/latest" format="" sort={sort} page={page} />
+      <BrowseSuspense basePath="/manga" format="manga" sort={sort} page={page} />
     </div>
   );
 }

@@ -1,119 +1,133 @@
 // ============================================================
-// HyuuHub — domain types
+// types/index.ts — domain types HyuuHub (manga/manhwa/manhua)
 // Semua struktur data yang dikonsumsi UI — hasil normalisasi
-// adapter anichin (lihat lib/anichin/*). UI tidak pernah
-// menyentuh response mentah scraper.
+// adapter shinigami (lihat lib/shinigami/*).
+//
+// PENTING: `slug` adalah identity publik kita (dipakai di URL:
+// /manga/<slug>, /read/<slug>/<chapter>). UUID upstream
+// (mangaId/chapterId) hanya dipakai internal, tidak pernah
+// muncul di URL UI.
 // ============================================================
 
-export interface DonghuaCard {
-  /** slug seri — dipakai sebagai id di route /donghua/[slug] */
-  id: string;
-  title: string;
-  poster: string | null;
-  /** label episode mentah, mis. "Ep 285" */
-  episodeLabel?: string;
-  /** nomor episode bila ter-parsing */
-  episode?: number;
-  type?: string;
-  url: string;
-}
+export type FormatKey = "manga" | "manhwa" | "manhua";
+export type StatusKey = "ongoing" | "completed" | "hiatus" | "unknown";
 
-export interface LeaderboardEntry {
-  id: string;
-  rank: string;
+export interface MangaCard {
+  /** slug dari judul — id publik di URL */
+  slug: string;
+  /** uuid upstream, internal only */
+  mangaId: string;
   title: string;
-  rating: string | null;
-  genres: string[];
-  poster: string | null;
-  url: string;
+  cover: string | null;
+  /** label chapter mentah, mis. "Ch. 97" */
+  chapterLabel?: string;
+  chapterNumber?: number;
+  /** Manga | Manhwa | Manhua */
+  format?: string;
+  rating?: number | null;
+  views?: number;
+  status?: StatusKey;
+  /** uuid chapter terbaru — dipakai tombol "Baca" */
+  latestChapterId?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface Genre {
-  id: string;
+  slug: string;
+  name: string;
+}
+
+export interface RankingEntry {
+  slug: string;
+  rank: number;
   title: string;
+  cover: string | null;
+  rating: number | null;
+  views: number | null;
+  format: string | null;
+  chapterNumber: number | null;
 }
 
 export interface HomeData {
-  hero: DonghuaCard[];
-  popularToday: DonghuaCard[];
-  latest: DonghuaCard[];
-  recommended: DonghuaCard[];
-  leaderboard: {
-    weekly: LeaderboardEntry[];
-    monthly: LeaderboardEntry[];
-    alltime: LeaderboardEntry[];
-  };
+  hero: MangaCard[];
+  trending: MangaCard[];
+  latest: MangaCard[];
+  recommended: MangaCard[];
+  hot: RankingEntry[];
+  topRated: RankingEntry[];
   genres: Genre[];
 }
 
 export interface Paginated<T> {
   page: number;
+  pageSize: number;
+  totalPage: number;
+  totalRecord: number;
   hasNextPage: boolean;
   items: T[];
 }
 
-export interface ScheduleItem {
+export interface ChapterEntry {
+  /** uuid upstream, internal only */
   id: string;
-  title: string;
-  time?: string;
-  poster: string | null;
-  url: string;
-}
-
-export type ScheduleMap = Record<string, ScheduleItem[]>;
-
-export interface EpisodeEntry {
-  id: string;
+  slug: string;
   number: number;
   title: string;
-  date?: string;
-  url: string;
+  releaseDate?: string;
+  views?: number;
 }
 
-export interface DonghuaDetail {
-  id: string;
+export interface MangaDetail {
+  slug: string;
+  mangaId: string;
   title: string;
   alternativeTitle: string | null;
-  poster: string | null;
+  cover: string | null;
+  banner: string | null;
   synopsis: string;
-  rating: string | null;
-  genres: string[];
-  status: string | null;
-  type: string | null;
+  rating: number | null;
+  views: number | null;
+  bookmarks: number | null;
+  status: StatusKey;
+  format: string | null;
   year: string | null;
-  studio: string | null;
-  network: string | null;
-  season: string | null;
-  duration: string | null;
-  totalEpisodes: number;
-  episodes: EpisodeEntry[];
+  country: string | null;
+  authors: string[];
+  artists: string[];
+  genres: Genre[];
+  totalChapters: number;
+  chapters: ChapterEntry[];
+  latestChapter: ChapterEntry | null;
+}
+
+export interface ReaderPage {
   url: string;
+  index: number;
 }
 
-export interface ServerOption {
-  name: string;
-  embedUrl: string | null;
-}
-
-export interface DownloadLink {
-  host: string;
-  url: string;
-}
-
-export interface WatchData {
-  id: string;
+export interface ReaderData {
+  slug: string;
+  mangaId: string;
   title: string;
-  seriesTitle: string;
-  episodeNumber: number | null;
-  defaultStream: string | null;
-  servers: ServerOption[];
-  downloads: Record<string, DownloadLink[]>;
+  cover: string | null;
+  chapterSlug: string;
+  chapterNumber: number;
+  chapterTitle: string;
+  pages: ReaderPage[];
   navigation: {
-    prevId: string | null;
-    nextId: string | null;
-    seriesId: string | null;
+    prevChapter: number | null;
+    nextChapter: number | null;
   };
-  url: string;
+  totalChapters: number;
+  releaseDate?: string | null;
+}
+
+export interface BrowseFilters {
+  format?: FormatKey | "";
+  genre?: string;
+  sort?: "latest" | "rank" | "bookmark" | "rating";
+  page?: number;
+  pageSize?: number;
 }
 
 // ── Supabase user data ─────────────────────────────────────
@@ -124,7 +138,7 @@ export interface Profile {
   created_at: string;
 }
 
-export interface WatchHistoryEntry {
+export interface HistoryEntry {
   id: string;
   user_id: string;
   series_id: string;

@@ -14,8 +14,8 @@ export const config = {
     /*
      * Jalankan di semua route kecuali:
      * - _next/static, _next/image
-     * - favicon, robots, sitemap, dan API anichin (scraper, tanpa session)
+     * - favicon, robots, sitemap
      */
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/anichin|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

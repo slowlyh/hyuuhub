@@ -57,26 +57,26 @@ function LoginForm() {
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-accent font-bold text-accent-foreground">
+        <div className="btn-accent mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl font-bold">
           H
         </div>
         <h1 className="text-xl font-bold tracking-tight">
           {mode === "login" ? "Masuk ke HyuuHub" : "Buat akun HyuuHub"}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Simpan favorit & lanjutkan tontonan.
+        <p className="mt-1 text-sm text-dim">
+          Simpan favorit & lanjut baca otomatis.
         </p>
       </div>
 
       {/* Mode tabs */}
-      <div className="mb-5 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-sm font-medium">
+      <div className="glass mb-5 grid grid-cols-2 overflow-hidden text-sm font-medium">
         {(["login", "register"] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => { setMode(m); setError(""); }}
             className={`py-2 transition-colors ${
-              mode === m ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"
+              mode === m ? "btn-accent rounded-xl" : "text-dim hover:bg-white/5 hover:text-foreground"
             }`}
           >
             {m === "login" ? "Login" : "Register"}
@@ -87,7 +87,7 @@ function LoginForm() {
       <form onSubmit={submit} className="space-y-3">
         {mode === "register" && (
           <div>
-            <label htmlFor="username" className="mb-1 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="username" className="mb-1 block text-xs font-medium text-dim">
               Username
             </label>
             <input
@@ -98,12 +98,12 @@ function LoginForm() {
               minLength={3}
               maxLength={30}
               placeholder="hyuu"
-              className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none transition-colors focus:border-accent"
+              className="w-full rounded-xl border border-stroke bg-glass px-3 py-2.5 text-sm outline-none backdrop-blur-xl transition-colors placeholder:text-faint focus:border-accent/60"
             />
           </div>
         )}
         <div>
-          <label htmlFor="email" className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label htmlFor="email" className="mb-1 block text-xs font-medium text-dim">
             Email
           </label>
           <input
@@ -113,11 +113,11 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none transition-colors focus:border-accent"
+            className="w-full rounded-xl border border-stroke bg-glass px-3 py-2.5 text-sm outline-none backdrop-blur-xl transition-colors placeholder:text-faint focus:border-accent/60"
           />
         </div>
         <div>
-          <label htmlFor="password" className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label htmlFor="password" className="mb-1 block text-xs font-medium text-dim">
             Password
           </label>
           <input
@@ -128,12 +128,12 @@ function LoginForm() {
             required
             minLength={6}
             placeholder="minimal 6 karakter"
-            className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none transition-colors focus:border-accent"
+            className="w-full rounded-xl border border-stroke bg-glass px-3 py-2.5 text-sm outline-none backdrop-blur-xl transition-colors placeholder:text-faint focus:border-accent/60"
           />
         </div>
 
         {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {error}
           </p>
         )}
@@ -141,14 +141,14 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-2.5 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="btn-accent inline-flex w-full items-center justify-center gap-2 py-2.5 text-sm disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {mode === "login" ? "Masuk" : "Daftar"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-xs text-muted-foreground">
+      <p className="mt-6 text-center text-xs text-dim">
         <Link href="/" className="hover:text-foreground">← Kembali ke Home</Link>
       </p>
     </div>

@@ -11,8 +11,12 @@ export function LogoutButton() {
   const router = useRouter();
 
   async function logout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      /* ignore */
+    }
     router.push("/");
     router.refresh();
   }
@@ -21,7 +25,7 @@ export function LogoutButton() {
     <button
       onClick={logout}
       aria-label="Logout"
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stroke bg-glass text-dim transition-colors hover:bg-white/10 hover:text-foreground"
     >
       <LogOut className="h-4 w-4" />
     </button>
